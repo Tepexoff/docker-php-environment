@@ -1,0 +1,62 @@
+version: '3'
+services:
+
+  #PHP Service
+  phpfpm_july:
+    build:
+      context: ./php-fpm
+      dockerfile: Dockerfile
+    image: php7.2-fpm
+    container_name: phpfpm_july
+    restart: always
+    tty: true
+    working_dir: /var/www
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./:/var/www
+    networks:
+      - app-network
+
+  #Nginx Service
+  webserver_july:
+    image: nginx:alpine
+    container_name: webserver_july
+    restart: always
+    tty: true
+    depends_on:
+      - phpfpm_july
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+      - ./nginx/log/error.log:/var/log/nginx/error.log
+    networks:
+      - app-network
+
+  #MySQL Service
+  db_july:
+    image: mysql:5.7
+    container_name: db_july
+    restart: always
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - dbdata_volume:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - app-network
+
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
+
+#Volumes
+volumes:
+  dbdata_volume:
+    driver: local
