@@ -1,2 +1,5 @@
 .idea/
 nginx/log/*
+app/*
+!app/autoload.php
+!app/index.php
